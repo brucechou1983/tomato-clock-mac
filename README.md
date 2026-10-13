@@ -65,6 +65,8 @@ Debug 版本：`./scripts/build-app.sh debug`。
 
 產生 DMG 及 SHA-256 校驗檔：`./scripts/package-dmg.sh`。
 
+只安裝已建置的 app 並開啟：`./scripts/install-app.sh`。安裝前會等待 app 確實退出，讓進度保存完成；安裝後會以新實例啟動並確認程序存在。
+
 建置腳本會編譯、繪製 app 圖示、包裝 `.app` 並完成本機 ad-hoc 簽名；不需要開發者帳號。`Package.swift` 也可用 Xcode 開啟。系統通知需要 app bundle，請用建置腳本包裝後執行，勿直接執行裸 SwiftPM binary。
 
 ## 驗證
@@ -99,3 +101,5 @@ open "build/Tomato Clock.app" --args --ui-test
 腳本會測試、建置 DMG、提交本專案的原始碼與文件、推送 `main` 和 `v1.0.0` tag，再上傳 DMG／校驗檔並發布 Release，最後安裝到「應用程式」並開啟 app。如果 GitHub CLI 尚未登入，先執行 `gh auth login --hostname github.com`。
 
 腳本不含 secrets，也不讀出或印出 token。它使用 Git 與 GitHub CLI 既有登入；不會 force-push、移動既有 tag 或覆寫已發布的 Release。若中途失敗，可以在修正問題後重新執行；已完成的相同版本會檢查後略過。
+
+如果 Release 已發布，只有第 6 步安裝／開啟失敗，執行 `./scripts/install-app.sh` 即可，不需要重新打包或發布。`v1.0.0` tag 已固定後，新的 commit 不可再使用同一個 tag 發版。

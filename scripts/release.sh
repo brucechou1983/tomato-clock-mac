@@ -6,8 +6,6 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 REPOSITORY="brucechou1983/tomato-clock-mac"
 VERSION="1.0.0"
 TAG="v$VERSION"
-APP_PATH="$PROJECT_ROOT/build/Tomato Clock.app"
-INSTALLED_APP="/Applications/Tomato Clock.app"
 DMG_NAME="Tomato-Clock-$VERSION-arm64.dmg"
 DMG_PATH="$PROJECT_ROOT/build/$DMG_NAME"
 CHECKSUM_PATH="$DMG_PATH.sha256"
@@ -43,7 +41,7 @@ esac
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)" == "$VERSION" ]] \
     || fail 'Info.plist 的版本不是 1.0.0。'
 [[ -s docs/images/main.png && -s "$NOTES_PATH" ]] || fail '缺少 README 截圖或 Release notes。'
-for script in scripts/build-app.sh scripts/test.sh scripts/package-dmg.sh; do
+for script in scripts/build-app.sh scripts/test.sh scripts/package-dmg.sh scripts/install-app.sh; do
     [[ -x "$script" ]] || fail "腳本不可執行：$script"
 done
 if "$CHECK_ONLY"; then
@@ -132,17 +130,6 @@ fi
     || fail 'Release 仍是草稿；尚未完成發布。'
 
 printf '%s\n' '6/6 安裝到應用程式並開啟'
-if pgrep -x TomatoClock >/dev/null; then
-    # Graceful quit lets the app save and pause its current timer.
-    osascript -e 'tell application id "com.bruce.tomato-clock" to quit'
-fi
-if [[ -w /Applications && ( ! -e "$INSTALLED_APP" || -w "$INSTALLED_APP" ) ]]; then
-    ditto "$APP_PATH" "$INSTALLED_APP"
-else
-    printf '%s\n' '安裝需要管理員權限；密碼只會在 Terminal 的 sudo 提示中輸入。'
-    sudo ditto "$APP_PATH" "$INSTALLED_APP"
-fi
-codesign --verify --strict "$INSTALLED_APP"
-open "$INSTALLED_APP"
+./scripts/install-app.sh
 printf '\n%s\n' 'v1.0.0 已發布，app 已安裝並開啟。'
 gh release view "$TAG" --repo "$REPOSITORY" --json url --jq .url
